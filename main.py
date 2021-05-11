@@ -21,7 +21,7 @@ def main():
     ## MAIN LOOP
     while True:
         clock.tick(FPS)
-        display.fill((255, 255, 255))
+        display.fill(pygame.Color("#09BC8A"))
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
@@ -31,7 +31,7 @@ def main():
                 manager.change_scene(some_other_scene)
                 return
 
-        print("MAIN")
+        print("MAIN SCENE")
 
         WINDOW.blit(pygame.transform.scale(display, (WW, WH)), (0, 0))
         pygame.display.update()
@@ -42,7 +42,7 @@ def some_other_scene():
     ## MAIN LOOP
     while True:
         clock.tick(FPS)
-        display.fill((255, 255, 255))
+        display.fill(pygame.Color("#74B3CE"))
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
