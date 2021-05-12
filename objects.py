@@ -2,7 +2,7 @@ from imports import *
 
 
 class Player:
-    def __init__(self):
+    def __init__(self, pos: vec):
         self.image = pygame.Surface((16, 16))
         self.image.fill(color("#85CB33"))
         self.rect = self.image.get_rect(center=(200, 100))
@@ -13,12 +13,16 @@ class Player:
             "right": False,
             "up": False,
         }
+        self.body = pygame.Rect(0, 0, 32, 32)
+        self.body.center = pos
 
-    def render(self, window):
-        window.blit(self.image, self.rect)
+    def render(self, window, scroll):
+        window.blit(self.image, (self.rect.x-scroll.x, self.rect.y-scroll.y))
+
+    def get_hits(self, tiles):
+        return [tile for tile in tiles if self.body.colliderect(tile.rect)]
 
     def move(self):
-
         if self.direction["left"]:
             self.vel.x = -self.strength
         elif self.direction["right"]:
@@ -44,25 +48,33 @@ class Line:
         self.origin = origin
         self.angular_speed = 0
         self.width = width
-        if 'end' in kwargs.keys():
-            self.end = kwargs['end']
+        if "end" in kwargs.keys():
+            self.end = kwargs["end"]
             self.angle = self.origin.angle_to(self.end)
-            self.components = vec(self.end.x - self.origin.x, self.end.y - self.origin.y)
+            self.components = vec(
+                self.end.x - self.origin.x, self.end.y - self.origin.y
+            )
             self.magnitude = self.components.magnitude()
-        elif 'angle' in kwargs.keys() and 'magnitude' in kwargs.keys():
-            self.angle = kwargs['angle']
-            self.magnitude = kwargs['magnitude']
+        elif "angle" in kwargs.keys() and "magnitude" in kwargs.keys():
+            self.angle = kwargs["angle"]
+            self.magnitude = kwargs["magnitude"]
             self.end = vec()
-            self.end.x = self.origin.x + self.magnitude*math.cos(math.radians(self.angle)) 
-            self.end.y = self.origin.y + self.magnitude*math.sin(math.radians(self.angle)) 
-            self.components = vec(self.end.x - self.origin.x, self.end.y - self.origin.y)
+            self.end.x = self.origin.x + self.magnitude * math.cos(
+                math.radians(self.angle)
+            )
+            self.end.y = self.origin.y + self.magnitude * math.sin(
+                math.radians(self.angle)
+            )
+            self.components = vec(
+                self.end.x - self.origin.x, self.end.y - self.origin.y
+            )
         else:
             raise_user_warning("Insufficient data for Line")
 
     def update(self):
         self.angle += self.angular_speed
-        self.end.x = self.origin.x + self.magnitude*math.cos(math.radians(self.angle)) 
-        self.end.y = self.origin.y + self.magnitude*math.sin(math.radians(self.angle))
+        self.end.x = self.origin.x + self.magnitude * math.cos(math.radians(self.angle))
+        self.end.y = self.origin.y + self.magnitude * math.sin(math.radians(self.angle))
 
     def draw(self, screen):
         pygame.draw.line(screen, color(0, 0, 0), self.origin, self.end, self.width)
