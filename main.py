@@ -41,7 +41,7 @@ def main():
 
 def some_other_scene():
     ## SETUP
-    player = Player(pygame.Rect(SW, SH, 50, 50))
+    player = Player()
     direction = None
     ## MAIN LOOP
     while True:
@@ -64,6 +64,8 @@ def some_other_scene():
                 if event.key == pygame.K_SPACE:
                     manager.change_scene(main)
                     return
+
+        player.update()
 
         player.move(direction)
         print("SOME OTHER SCENE")
