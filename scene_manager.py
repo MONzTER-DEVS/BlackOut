@@ -33,15 +33,16 @@ SCENE MANAGER MANUAL:
 
 """
 
+
 class SceneManager:
     def __init__(self, *scenes, active_scene_index=0):
         self.scenes = list(scenes)
         self.active_scene = self.scenes[active_scene_index]
-    
+
     def run(self):
         while True:
             self.active_scene()
-    
+
     def change_scene(self, scene=None, scene_index=None):
         if scene:
             self.active_scene = scene
@@ -49,10 +50,8 @@ class SceneManager:
             self.active_scene = self.scenes[scene_index]
         else:
             raise_user_warning("NO SCENE CHANGED...")
-        
+
     def exit(self):
         pygame.quit()
         sys.exit()
         return
-
-    
