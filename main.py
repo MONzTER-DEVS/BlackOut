@@ -42,6 +42,7 @@ def main():
 def some_other_scene():
     ## SETUP
     player = Player(pygame.Rect(SW, SH, 50, 50))
+    direction = None
     ## MAIN LOOP
     while True:
         clock.tick(FPS)
@@ -53,17 +54,18 @@ def some_other_scene():
                 return
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RIGHT:
-                    player.move("right")
+                    direction = "right"
                 if event.key == pygame.K_LEFT:
-                    player.move("left")
+                    direction = "left"
                 if event.key == pygame.K_UP:
-                    player.move("up")
+                    direction = "up"
                 if event.key == pygame.K_DOWN:
-                    player.move("down")
+                    direction = "down"
                 if event.key == pygame.K_SPACE:
                     manager.change_scene(main)
                     return
 
+        player.move(direction)
         print("SOME OTHER SCENE")
 
         WINDOW.blit(pygame.transform.scale(display, (WW, WH)), (0, 0))
