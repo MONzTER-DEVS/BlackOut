@@ -14,16 +14,17 @@ class Player:
     def move(self, direction):
         if direction == "right":
             self.vel.x = self.strength
+            self.vel.y = 0
         elif direction == "left":
             self.vel.x = -self.strength
+            self.vel.y = 0
         elif direction == "up":
             self.vel.y = -self.strength
+            self.vel.x = 0
         elif direction == "down":
             self.vel.y = self.strength
-        else:
             self.vel.x = 0
-            self.vel.y = 0
-        
+
     def update(self):
         self.rect.x += self.vel.x
         self.rect.y += self.vel.y
