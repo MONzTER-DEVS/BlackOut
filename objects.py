@@ -14,9 +14,10 @@ class Player:
             "up": False,
         }
         self.leg_back = LegIK(self.rect, 45)
+        self.is_on_ground = False
 
     def render(self, window, scroll):
-        window.blit(self.image, (self.rect.x-scroll.x, self.rect.y-scroll.y))
+        window.blit(self.image, (self.rect.x - scroll.x, self.rect.y - scroll.y))
         self.leg_back.draw(window, scroll)
 
     def get_hits(self, tiles):
@@ -30,19 +31,39 @@ class Player:
         else:
             self.vel.x = 0
 
-        if self.direction["up"]:
-            self.vel.y = -self.strength
+        if self.direction["up"] and self.is_on_ground:
+            self.vel.y = -2 * self.strength
+            self.is_on_ground = False
 
-    def update(self):
+    def update(self, tiles):
+        self.leg_back.update(self.vel)
         self.vel.y += GRAVITY
         self.rect.x += self.vel.x
+        # COLLISION ON X
+        hits = self.get_hits(tiles)
+        for tile in hits:
+            if self.vel.x > 0:
+                self.rect.right = tile.rect.left
+                self.vel.x = 0
+                if self.is_on_ground:
+                    self.is_on_ground = False
+            elif self.vel.x < 0:
+                self.rect.left = tile.rect.right
+                self.vel.x = 0
+                if self.is_on_ground:
+                    self.is_on_ground = False
         self.rect.y += self.vel.y
-
-        if self.rect.bottom > 200:
-            self.vel.y = 0
-            self.rect.bottom = 200
-
-        self.leg_back.update(self.vel)
+        # COLLISION ON Y
+        hits = self.get_hits(tiles)
+        for tile in hits:
+            if self.vel.y > 0:
+                self.is_on_ground = True
+                self.rect.bottom = tile.rect.top
+                self.vel.y = 0
+            elif self.vel.y < 0:
+                self.is_on_ground = False
+                self.rect.top = tile.rect.bottom
+                self.vel.y = 0
 
 
 class Line:
@@ -98,13 +119,19 @@ class Line:
         self.end.x = self.origin.x + self.magnitude * math.cos(math.radians(self.angle))
         self.end.y = self.origin.y + self.magnitude * math.sin(math.radians(self.angle))
 
-    def move_end_to(self, pos:vec):
+    def move_end_to(self, pos: vec):
         self.end = pos
         self.origin.x = self.end.x - self.magnitude * math.cos(math.radians(self.angle))
         self.origin.y = self.end.y - self.magnitude * math.sin(math.radians(self.angle))
 
     def draw(self, screen, scroll):
-        pygame.draw.line(screen, color(0, 0, 0), (self.origin-scroll), (self.end-scroll), self.width)
+        pygame.draw.line(
+            screen,
+            color(0, 0, 0),
+            (self.origin - scroll),
+            (self.end - scroll),
+            self.width,
+        )
 
 
 class Leg:
@@ -116,10 +143,10 @@ class Leg:
     def update(self, vel: vec):
         self.thigh.move_origin_to(vec(self.body_rect.midbottom))
         self.calf.move_origin_to(self.thigh.end)
-        if vel.x > 0:       ## MOVING RIGHT
+        if vel.x > 0:  ## MOVING RIGHT
             self.thigh.rotate_from_origin(vel.x * 2)
             # self.calf.rotate_from_origin(5)
-        elif vel.x < 0:       ## MOVING LEFT
+        elif vel.x < 0:  ## MOVING LEFT
             self.thigh.rotate_from_origin(vel.x * 2)
             # self.calf.rotate_from_origin(-5)
         if vel.y < 0:
@@ -158,10 +185,14 @@ class LegIK:
             self.joint_angle0 = 135
             self.joint_angle1 = atan
         else:
-            cosAngle0 = ((length2 * length2) + (length0 * length0) - (length1 * length1)) / (2 * length2 * length0)
+            cosAngle0 = (
+                (length2 * length2) + (length0 * length0) - (length1 * length1)
+            ) / (2 * length2 * length0)
             angle0 = math.degrees(math.acos(cosAngle0))
 
-            cosAngle1 = ((length1 * length1) + (length0 * length0) - (length2 * length2)) / (2 * length1 * length0)
+            cosAngle1 = (
+                (length1 * length1) + (length0 * length0) - (length2 * length2)
+            ) / (2 * length1 * length0)
             angle1 = math.acos(cosAngle1)
 
             self.joint_angle0 = 135 - angle0

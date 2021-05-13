@@ -34,7 +34,6 @@ def main():
             if event.type == pygame.QUIT:
                 manager.exit()
                 return
-
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RIGHT:
                     player.direction["right"] = True
@@ -50,7 +49,7 @@ def main():
                 if event.key == pygame.K_UP:
                     player.direction["up"] = False
 
-        player.update()
+        player.update(level)
         player.move()
         player.render(display, scroll)
         for tile in level:
