@@ -29,8 +29,8 @@ def main():
     while True:
         clock.tick(FPS)
         display.fill(color("#A5CBC3"))
-        # scroll.x += (player.body.centerx - scroll.x - SW / 2) // 10
-        # scroll.y += (player.body.centery - scroll.y - SH / 2) // 10
+        scroll.x += (player.rect.centerx - scroll.x - SW / 2) // 10
+        scroll.y += (player.rect.centery - scroll.y - SH / 2) // 10
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
@@ -65,10 +65,7 @@ def main():
         # line.draw(display)
         for tile in level:
             tile.draw(display, scroll)
-        hit = player.get_hits(level)
-        for tile in hit:
-            tile.draw(display, scroll)
-            print(tile)
+            
         WINDOW.blit(pygame.transform.scale(display, (WW, WH)), (0, 0))
         pygame.display.update()
 

@@ -13,14 +13,12 @@ class Player:
             "right": False,
             "up": False,
         }
-        self.body = pygame.Rect(0, 0, 32, 32)
-        self.body.center = pos
 
     def render(self, window, scroll):
         window.blit(self.image, (self.rect.x-scroll.x, self.rect.y-scroll.y))
 
     def get_hits(self, tiles):
-        return [tile for tile in tiles if self.body.colliderect(tile.rect)]
+        return [tile for tile in tiles if self.rect.colliderect(tile.rect)]
 
     def move(self):
         if self.direction["left"]:
