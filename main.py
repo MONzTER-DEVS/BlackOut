@@ -21,10 +21,8 @@ display = pygame.Surface((SW, SH))
 def main():
     ## SETUP
     player = Player(vec(SW // 2, SH // 2))
-    line = Line(vec(SW // 2, SH // 2), 1, angle=45, magnitude=50)
     level, map_size = load_map_by_csv(os.path.join("maps", "map.csv"))
     scroll = vec()
-    hit = None
     ## MAIN LOOP
     while True:
         clock.tick(FPS)
@@ -44,9 +42,6 @@ def main():
                     player.direction["left"] = True
                 if event.key == pygame.K_UP:
                     player.direction["up"] = True
-                # if event.key == pygame.K_SPACE:
-                # manager.change_scene(main)
-                # return
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT:
                     player.direction["right"] = False
@@ -58,14 +53,9 @@ def main():
         player.update()
         player.move()
         player.render(display, scroll)
-        # line.angular_speed += 0.5
-        # line.angle += 1
-        # line.origin.x += 5
-        # line.update()
-        # line.draw(display)
         for tile in level:
             tile.draw(display, scroll)
-            
+
         WINDOW.blit(pygame.transform.scale(display, (WW, WH)), (0, 0))
         pygame.display.update()
 

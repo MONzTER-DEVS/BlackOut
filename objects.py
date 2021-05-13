@@ -13,9 +13,11 @@ class Player:
             "right": False,
             "up": False,
         }
+        self.leg_back = LegIK(self.rect, 45)
 
     def render(self, window, scroll):
         window.blit(self.image, (self.rect.x-scroll.x, self.rect.y-scroll.y))
+        self.leg_back.draw(window, scroll)
 
     def get_hits(self, tiles):
         return [tile for tile in tiles if self.rect.colliderect(tile.rect)]
@@ -39,6 +41,8 @@ class Player:
         if self.rect.bottom > 200:
             self.vel.y = 0
             self.rect.bottom = 200
+
+        self.leg_back.update(self.vel)
 
 
 class Line:
@@ -69,12 +73,107 @@ class Line:
         else:
             raise_user_warning("Insufficient data for Line")
 
-    def update(self):
-        self.angle += self.angular_speed
+    def set_angle_from_origin(self, angle: float):
+        self.angle = angle
         self.end.x = self.origin.x + self.magnitude * math.cos(math.radians(self.angle))
         self.end.y = self.origin.y + self.magnitude * math.sin(math.radians(self.angle))
 
-    def draw(self, screen):
-        pygame.draw.line(screen, color(0, 0, 0), self.origin, self.end, self.width)
-        # pygame.draw.circle(screen, color(0, 0, 0), self.origin, self.width//2)
-        # pygame.draw.circle(screen, color(0, 0, 0), self.end, self.width//2)
+    def set_angle_from_end(self, angle: float):
+        self.angle = angle
+        self.origin.x = self.end.x - self.magnitude * math.cos(math.radians(self.angle))
+        self.origin.y = self.end.y - self.magnitude * math.sin(math.radians(self.angle))
+
+    def rotate_from_origin(self, angle: float):
+        self.angle += angle
+        self.end.x = self.origin.x + self.magnitude * math.cos(math.radians(self.angle))
+        self.end.y = self.origin.y + self.magnitude * math.sin(math.radians(self.angle))
+
+    def rotate_from_end(self, angle: float):
+        self.angle += angle
+        self.origin.x = self.end.x - self.magnitude * math.cos(math.radians(self.angle))
+        self.origin.y = self.end.y - self.magnitude * math.sin(math.radians(self.angle))
+
+    def move_origin_to(self, pos: vec):
+        self.origin = pos
+        self.end.x = self.origin.x + self.magnitude * math.cos(math.radians(self.angle))
+        self.end.y = self.origin.y + self.magnitude * math.sin(math.radians(self.angle))
+
+    def move_end_to(self, pos:vec):
+        self.end = pos
+        self.origin.x = self.end.x - self.magnitude * math.cos(math.radians(self.angle))
+        self.origin.y = self.end.y - self.magnitude * math.sin(math.radians(self.angle))
+
+    def draw(self, screen, scroll):
+        pygame.draw.line(screen, color(0, 0, 0), (self.origin-scroll), (self.end-scroll), self.width)
+
+
+class Leg:
+    def __init__(self, body_rect: pygame.Rect, thigh_angle: float):
+        self.body_rect = body_rect
+        self.thigh = Line(vec(body_rect.bottomright), angle=thigh_angle, magnitude=25)
+        self.calf = Line(vec(self.thigh.end), angle=90, magnitude=25)
+
+    def update(self, vel: vec):
+        self.thigh.move_origin_to(vec(self.body_rect.midbottom))
+        self.calf.move_origin_to(self.thigh.end)
+        if vel.x > 0:       ## MOVING RIGHT
+            self.thigh.rotate_from_origin(vel.x * 2)
+            # self.calf.rotate_from_origin(5)
+        elif vel.x < 0:       ## MOVING LEFT
+            self.thigh.rotate_from_origin(vel.x * 2)
+            # self.calf.rotate_from_origin(-5)
+        if vel.y < 0:
+            self.calf.move_end_to(vec(self.calf.end.x, self.calf.end.y - 25))
+
+    def draw(self, screen, scroll):
+        self.thigh.draw(screen, scroll)
+        self.calf.draw(screen, scroll)
+
+
+class LegIK:
+    def __init__(self, body_rect: pygame.Rect, thigh_angle: float):
+        self.body_rect = body_rect
+        self.thigh = Line(vec(body_rect.bottomright), angle=thigh_angle, magnitude=25)
+        self.calf = Line(vec(self.thigh.end), angle=90, magnitude=25)
+        self.ik = vec(150, 100)
+        self.joint_angle0 = 0
+        self.joint_angle1 = 0
+
+    def update(self, vel: vec):
+        self.thigh.move_origin_to(vec(self.body_rect.midbottom))
+        self.calf.move_origin_to(self.thigh.end)
+        length0 = self.thigh.magnitude
+        length1 = self.calf.magnitude
+        length2 = self.calf.end.distance_to(self.thigh.origin)
+
+        # mx, my = pygame.mouse.get_pos()
+        # self.ik = vec(mx//2, my//2)
+        # self.ik.x += 1
+        # self.ik = vec(150, 100)
+
+        diff = self.ik - self.thigh.origin
+        atan = math.degrees(math.atan2(diff.y, diff.x))
+
+        if length0 + length1 < length2:
+            self.joint_angle0 = 135
+            self.joint_angle1 = atan
+        else:
+            cosAngle0 = ((length2 * length2) + (length0 * length0) - (length1 * length1)) / (2 * length2 * length0)
+            angle0 = math.degrees(math.acos(cosAngle0))
+
+            cosAngle1 = ((length1 * length1) + (length0 * length0) - (length2 * length2)) / (2 * length1 * length0)
+            angle1 = math.acos(cosAngle1)
+
+            self.joint_angle0 = 135 - angle0
+            self.joint_angle1 = atan - angle1
+
+        # print(self.joint_angle0, self.joint_angle1)
+        self.thigh.set_angle_from_origin(self.joint_angle0)
+        self.calf.set_angle_from_origin(self.joint_angle1)
+
+    def draw(self, screen, scroll):
+        # self.ik.x -= scroll.x
+        # self.ik.y -= scroll.y
+        self.thigh.draw(screen, scroll)
+        self.calf.draw(screen, scroll)
+        pygame.draw.circle(screen, color(255, 255, 0), (self.ik - scroll), 10)
