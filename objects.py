@@ -2,7 +2,7 @@ from imports import *
 
 
 class Player:
-    def __init__(self, pos: vec):
+    def __init__(self):
         self.image = pygame.Surface((16, 16))
         self.image.fill(color("#85CB33"))
         self.rect = self.image.get_rect(center=(200, 100))
@@ -64,6 +64,50 @@ class Player:
                 self.is_on_ground = False
                 self.rect.top = tile.rect.bottom
                 self.vel.y = 0
+
+
+class Enemy:
+    def __init__(self):
+        self.image = pygame.Surface((16, 16))
+        self.image.fill(color("#c46292"))
+        self.rect = self.image.get_rect(center=(200, 100))
+        self.vel = vec()
+        self.direction = {
+            "left": False,
+            "right": False,
+        }
+        self.state = None
+        self.strength = 5
+        self.moveCount = 0
+        self.moveRight = False
+        self.moveLeft = False
+        self.last = pygame.time.get_ticks()
+        self.cooldown = 300
+
+    def render(self, window, scroll):
+        window.blit(self.image, (self.rect.x - scroll.x, self.rect.y - scroll.y))
+
+    def move(self):
+        if self.moveCount >= 100:
+            self.moveCount = 0
+        if self.moveCount % 2 == 0:
+            self.moveRight = True
+            self.moveLeft = False
+            self.moveCount += 1
+        else:
+            self.moveLeft = True
+            self.moveRight = False
+            self.moveCount += 1
+        if self.moveRight:
+            self.vel.x = self.strength
+        if self.moveLeft:
+            self.vel.x = -self.strength
+
+    def update(self):
+        now = pygame.time.get_ticks()
+        if now - self.last >= self.cooldown:
+            self.last = now
+            self.rect.x += 2 * self.vel.x
 
 
 class Line:
@@ -134,27 +178,27 @@ class Line:
         )
 
 
-class Leg:
-    def __init__(self, body_rect: pygame.Rect, thigh_angle: float):
-        self.body_rect = body_rect
-        self.thigh = Line(vec(body_rect.bottomright), angle=thigh_angle, magnitude=25)
-        self.calf = Line(vec(self.thigh.end), angle=90, magnitude=25)
+# class Leg:
+#     def __init__(self, body_rect: pygame.Rect, thigh_angle: float):
+#         self.body_rect = body_rect
+#         self.thigh = Line(vec(body_rect.bottomright), angle=thigh_angle, magnitude=25)
+#         self.calf = Line(vec(self.thigh.end), angle=90, magnitude=25)
 
-    def update(self, vel: vec):
-        self.thigh.move_origin_to(vec(self.body_rect.midbottom))
-        self.calf.move_origin_to(self.thigh.end)
-        if vel.x > 0:  ## MOVING RIGHT
-            self.thigh.rotate_from_origin(vel.x * 2)
-            # self.calf.rotate_from_origin(5)
-        elif vel.x < 0:  ## MOVING LEFT
-            self.thigh.rotate_from_origin(vel.x * 2)
-            # self.calf.rotate_from_origin(-5)
-        if vel.y < 0:
-            self.calf.move_end_to(vec(self.calf.end.x, self.calf.end.y - 25))
+#     def update(self, vel: vec):
+#         self.thigh.move_origin_to(vec(self.body_rect.midbottom))
+#         self.calf.move_origin_to(self.thigh.end)
+#         if vel.x > 0:  ## MOVING RIGHT
+#             self.thigh.rotate_from_origin(vel.x * 2)
+#             # self.calf.rotate_from_origin(5)
+#         elif vel.x < 0:  ## MOVING LEFT
+#             self.thigh.rotate_from_origin(vel.x * 2)
+#             # self.calf.rotate_from_origin(-5)
+#         if vel.y < 0:
+#             self.calf.move_end_to(vec(self.calf.end.x, self.calf.end.y - 25))
 
-    def draw(self, screen, scroll):
-        self.thigh.draw(screen, scroll)
-        self.calf.draw(screen, scroll)
+#     def draw(self, screen, scroll):
+#         self.thigh.draw(screen, scroll)
+#         self.calf.draw(screen, scroll)
 
 
 class LegIK:
