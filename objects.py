@@ -78,36 +78,20 @@ class Enemy:
         }
         self.state = None
         self.strength = 5
-        self.moveCount = 0
-        self.moveRight = False
-        self.moveLeft = False
-        self.last = pygame.time.get_ticks()
-        self.cooldown = 300
 
     def render(self, window, scroll):
         window.blit(self.image, (self.rect.x - scroll.x, self.rect.y - scroll.y))
 
     def move(self):
-        if self.moveCount >= 100:
-            self.moveCount = 0
-        if self.moveCount % 2 == 0:
-            self.moveRight = True
-            self.moveLeft = False
-            self.moveCount += 1
-        else:
-            self.moveLeft = True
-            self.moveRight = False
-            self.moveCount += 1
-        if self.moveRight:
+        if self.direction['right']:
             self.vel.x = self.strength
-        if self.moveLeft:
+        elif self.direction['left']:
             self.vel.x = -self.strength
+        else:
+            self.vel.x = 0
 
     def update(self):
-        now = pygame.time.get_ticks()
-        if now - self.last >= self.cooldown:
-            self.last = now
-            self.rect.x += 2 * self.vel.x
+        self.rect.x += self.vel.x
 
 
 class Line:

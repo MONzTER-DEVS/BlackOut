@@ -9,7 +9,7 @@ pygame.init()
 display_info = pygame.display.Info()
 clock = pygame.time.Clock()
 FPS = 60
-SCALE = 1/2
+SCALE = 1 / 2
 
 WW, WH = 600, 400
 WINDOW = pygame.display.set_mode((WW, WH))
@@ -38,27 +38,27 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RIGHT:
                     player.direction["right"] = True
-                    # enemy.direction["right"] = True
+                    enemy.direction["right"] = True
                 if event.key == pygame.K_LEFT:
                     player.direction["left"] = True
-                    # enemy.direction["left"] = True
+                    enemy.direction["left"] = True
                 if event.key == pygame.K_UP:
                     player.direction["up"] = True
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT:
                     player.direction["right"] = False
-                    # enemy.direction["right"] = False
+                    enemy.direction["right"] = False
                 if event.key == pygame.K_LEFT:
                     player.direction["left"] = False
-                    # enemy.direction["left"] = False
+                    enemy.direction["left"] = False
                 if event.key == pygame.K_UP:
                     player.direction["up"] = False
 
         player.update(level)
         player.move()
         player.render(display, scroll)
-        enemy.move()
         enemy.update()
+        enemy.move()
         enemy.render(display, scroll)
         for tile in level:
             tile.draw(display, scroll)
